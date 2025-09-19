@@ -1,0 +1,176 @@
+from enum import Enum
+from datetime import datetime
+
+ToDo_List = []
+
+class status(Enum):
+    TODO = 1
+    IN_PROGRESS = 2
+    DONE = 3
+
+    def __str__(self):
+        if self == status.TODO:
+            return "To Do"
+        elif self == status.IN_PROGRESS:
+            return "In Progress"
+        elif self == status.DONE:
+            return "Done"
+        return self.name
+
+class ToDo:
+    def __init__(self, task, priority : int, deadline):
+        self.task = task
+        self.priority : int = priority
+        self.deadline : datetime = deadline
+        self.status = status.TODO
+
+    def __str__(self):
+        return f"Task: {self.task}, Priority: {self.priority}, status: {self.status.name}, Due Date: {self.deadline}"
+
+def _add_task():
+    task = input("Enter the task: ")
+    while True:
+        try:
+            priority = int(input("Enter the priority (1 - 5): "))
+            break
+        except:
+            print("Invalid priority. Please enter a number between 1 and 5.")
+    while True:
+        try:
+            date = datetime.strptime(input("Enter the due date (DD-MM-YYYY): "), "%d-%m-%Y").date()
+            break
+        except:
+            print("Invalid date format. Please enter the date in DD-MM-YYYY format.")
+    new_task = ToDo(task, priority, date)
+    ToDo_List.append(new_task)
+    print("Task added successfully.")
+
+def _print_tasks():
+    if not ToDo_List:
+        print("No tasks available.")
+    else:
+        for idx, task in enumerate(ToDo_List, start=1):
+            print(f"{idx}. {task}")
+
+def remove_task():
+    if not ToDo_List:
+        print("No tasks to remove.")
+        return
+    _print_tasks()
+    while True:
+        try:
+            task_num = int(input("Enter the task number to remove or 0 to end: "))
+            if 1 <= task_num <= len(ToDo_List):
+                removed_task = ToDo_List.pop(task_num - 1)
+                print(f"Removed task: {removed_task}")
+                break
+            elif task_num == 0:
+                break
+            else:
+                print("Invalid task number. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+def view_tasks():
+    if not ToDo_List:
+        print("No tasks available.")
+        return
+    print("how would you like to view the tasks?")
+    print("0. return to main menu")
+    print("1. View all tasks")
+    print("2. View tasks by status")
+    print("3. View tasks by priority")
+    print("4. View tasks by deadline")
+    choice = input("Choose an option: ")
+
+    if choice == '0':
+        return
+    elif choice == '1':
+        _print_tasks()
+    elif choice == '2':
+        for s in status:
+            print(f"\nTasks with status: {s.name}")
+            for idx, task in enumerate(ToDo_List, start=1):
+                if task.status == s:
+                    print(f"{idx}. {task}")
+    elif choice == '3':
+        sorted_tasks = sorted(ToDo_List, key=lambda x: (x.priority, x.deadline))
+        print("\nTasks sorted by priority:")
+        for idx, task in enumerate(sorted_tasks, start=1):
+            print(f"{idx}. {task}")
+    elif choice == '4':
+        sorted_tasks = sorted(ToDo_List, key=lambda x: x.deadline)
+        print("\nTasks sorted by deadline:")
+        for idx, task in enumerate(sorted_tasks, start=1):
+            print(f"{idx}. {task}")
+
+def update_task_status():
+            if not ToDo_List:
+                print("No tasks to update.")
+                return
+            _print_tasks()
+            while True:
+                try:
+                    task_num = int(input("Enter the task number to update status or 0 to end: "))
+                    if 1 <= task_num <= len(ToDo_List):
+                        print("Select new status:")
+                        for s in status:
+                            print(f"{s.value} to move the task to {s.name}")
+                        while True:
+                            try:
+                                new_status = int(input("Enter the new status number: "))
+                                if new_status in [s.value for s in status]:
+                                    ToDo_List[task_num - 1].status = status(new_status)
+                                    print(f"Updated task: {ToDo_List[task_num - 1]}")
+                                    break
+                                else:
+                                    print("Invalid status number. Please try again.")
+                            except ValueError:
+                                print("Please enter a valid number.")
+                        break
+                    elif task_num == 0:
+                        break
+                    else:
+                        print("Invalid task number. Please try again.")
+                except ValueError:
+                    print("Please enter a valid number.")
+
+def showTasksPastDeadline():
+    today = datetime.now().date()
+    past_deadline_tasks = [task for task in ToDo_List if task.deadline < today and task.status != status.DONE]
+    if past_deadline_tasks:
+        print("\nTasks past their deadline:")
+        for task in past_deadline_tasks:
+            print(task)
+    else:
+        print("\nNo tasks are past their deadline.")
+
+
+def ___main___():
+    while True:
+        showTasksPastDeadline()
+
+        print("\nTo-Do List Menu:")
+        print("0. Exit")
+        print("1. Add Task")
+        print("2. Remove Task")
+        print("3. View Tasks")
+        print("4. update Task Status")
+
+        choice = input("Choose an option: ")
+
+        if choice == '0':
+            print("Exiting the program.")
+            break
+        elif choice == '1':
+            _add_task()
+        elif choice == '2':
+            remove_task()
+        elif choice == '3':
+            view_tasks()
+        elif choice == '4':
+            update_task_status()
+        else:
+            print("Invalid choice. Please try again.")
+
+___main___()
